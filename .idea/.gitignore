@@ -1,0 +1,11 @@
+# 默认忽略的文件
+/shelf/
+/workspace.xml
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
+/discord.xml
+/dataSources.xml
+/sql.iml
+/vcs.xml
+/modules.xml
