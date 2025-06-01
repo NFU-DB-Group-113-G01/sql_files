@@ -31,6 +31,7 @@ CREATE TABLE `booking` (
   `EmployeeID` int(11) NOT NULL,
   `CheckInDate` date NOT NULL,
   `CheckOutDate` date NOT NULL,
+  `NumberOfGuests` int(11) NOT NULL CHECK (`NumberOfGuests` > 0),
   `FinalPrice` decimal(10,2) NOT NULL CHECK (`FinalPrice` >= 0),
   PRIMARY KEY (`BookingID`),
   KEY `CustomerID` (`CustomerID`),
@@ -52,16 +53,16 @@ CREATE TABLE `booking` (
 LOCK TABLES `booking` WRITE;
 /*!40000 ALTER TABLE `booking` DISABLE KEYS */;
 INSERT INTO `booking` VALUES
-(1,1,2,2,2,'2025-06-10','2025-06-12',9440.00),
-(2,2,1,1,2,'2025-07-01','2025-07-03',5750.00),
-(3,3,3,3,3,'2025-08-05','2025-08-08',12000.00),
-(4,4,4,4,4,'2025-09-10','2025-09-12',9000.00),
-(5,5,5,5,5,'2025-10-01','2025-10-05',24000.00),
-(6,6,6,6,6,'2025-11-15','2025-11-18',21000.00),
-(7,7,7,7,7,'2025-12-20','2025-12-25',40000.00),
-(8,8,8,8,8,'2025-12-24','2025-12-26',8000.00),
-(9,9,9,9,9,'2025-01-02','2025-01-04',9000.00),
-(10,10,10,10,1,'2025-02-10','2025-02-12',10000.00);
+(1,1,2,2,2,'2025-06-10','2025-06-12',2,9440.00),
+(2,2,1,1,2,'2025-07-01','2025-07-03',1,5750.00),
+(3,3,3,3,3,'2025-08-05','2025-08-08',3,12000.00),
+(4,4,4,4,4,'2025-09-10','2025-09-12',2,9000.00),
+(5,5,5,5,5,'2025-10-01','2025-10-05',3,24000.00),
+(6,6,6,6,6,'2025-11-15','2025-11-18',2,21000.00),
+(7,7,7,7,7,'2025-12-20','2025-12-25',4,40000.00),
+(8,8,8,8,8,'2025-12-24','2025-12-26',1,8000.00),
+(9,9,9,9,9,'2025-01-02','2025-01-04',2,9000.00),
+(10,10,10,10,1,'2025-02-10','2025-02-12',4,10000.00);
 /*!40000 ALTER TABLE `booking` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -74,9 +75,9 @@ DROP TABLE IF EXISTS `customer`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `customer` (
   `CustomerID` int(11) NOT NULL AUTO_INCREMENT,
-  `Name` varchar(255) NOT NULL,
-  `Phone` varchar(50) NOT NULL,
-  `Email` varchar(255) NOT NULL,
+  `Name` varchar(255) NOT NULL CHECK (trim(`Name`) <> '' and !(`Name` regexp '[0-9]')),
+  `Phone` varchar(50) NOT NULL CHECK (`Phone` regexp '^09[0-9]{8}$' or `Phone` regexp '^(\\+8869|09)[0-9]{8}$' or `Phone` regexp '^\\+?[0-9\\-() ]{7,20}$'),
+  `Email` varchar(255) NOT NULL CHECK (`Email` regexp '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$'),
   PRIMARY KEY (`CustomerID`),
   UNIQUE KEY `Email` (`Email`)
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
@@ -111,11 +112,11 @@ DROP TABLE IF EXISTS `employee`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `employee` (
   `EmployeeID` int(11) NOT NULL AUTO_INCREMENT,
-  `Name` varchar(255) NOT NULL,
-  `Position` varchar(100) NOT NULL,
-  `Department` varchar(100) NOT NULL,
+  `Name` varchar(255) NOT NULL CHECK (trim(`Name`) <> '' and !(`Name` regexp '[0-9]')),
+  `Position` varchar(100) NOT NULL CHECK (trim(`Position`) <> ''),
+  `Department` varchar(100) NOT NULL CHECK (trim(`Department`) <> ''),
   `HireDate` date NOT NULL,
-  `Phone` varchar(50) NOT NULL,
+  `Phone` varchar(50) NOT NULL CHECK (`Phone` regexp '^09[0-9]{8}$' or `Phone` regexp '^(\\+8869|09)[0-9]{8}$' or `Phone` regexp '^\\+?[0-9\\-() ]{7,20}$'),
   `IsActive` tinyint(1) NOT NULL,
   PRIMARY KEY (`EmployeeID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
@@ -150,7 +151,7 @@ DROP TABLE IF EXISTS `meal_plan`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `meal_plan` (
   `MealPlanID` int(11) NOT NULL AUTO_INCREMENT,
-  `Name` varchar(100) NOT NULL,
+  `Name` varchar(100) NOT NULL CHECK (trim(`Name`) <> ''),
   `ExtraCharge` decimal(10,2) NOT NULL CHECK (`ExtraCharge` >= 0),
   PRIMARY KEY (`MealPlanID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
@@ -225,8 +226,8 @@ DROP TABLE IF EXISTS `menu_item`;
 CREATE TABLE `menu_item` (
   `MenuItemID` int(11) NOT NULL AUTO_INCREMENT,
   `RestaurantID` int(11) NOT NULL,
-  `Name` varchar(100) NOT NULL,
-  `Category` varchar(100) NOT NULL,
+  `Name` varchar(100) NOT NULL CHECK (trim(`Name`) <> ''),
+  `Category` varchar(100) NOT NULL CHECK (trim(`Category`) <> ''),
   `Price` decimal(10,2) NOT NULL CHECK (`Price` >= 0),
   PRIMARY KEY (`MenuItemID`),
   KEY `RestaurantID` (`RestaurantID`),
@@ -263,8 +264,8 @@ DROP TABLE IF EXISTS `restaurant`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `restaurant` (
   `RestaurantID` int(11) NOT NULL AUTO_INCREMENT,
-  `Name` varchar(255) NOT NULL,
-  `DayOfWeek` varchar(50) NOT NULL,
+  `Name` varchar(255) NOT NULL CHECK (trim(`Name`) <> ''),
+  `DayOfWeek` varchar(50) NOT NULL CHECK (trim(`DayOfWeek`) <> ''),
   `OpenTime` time NOT NULL,
   `CloseTime` time NOT NULL,
   PRIMARY KEY (`RestaurantID`),
@@ -339,7 +340,7 @@ DROP TABLE IF EXISTS `room`;
 CREATE TABLE `room` (
   `RoomID` int(11) NOT NULL AUTO_INCREMENT,
   `RoomTypeID` int(11) NOT NULL,
-  `RoomNumber` varchar(10) NOT NULL,
+  `RoomNumber` varchar(10) NOT NULL CHECK (trim(`RoomNumber`) <> ''),
   `RoomStatus` enum('待清潔','清潔中','正常','維修中') NOT NULL DEFAULT '正常',
   PRIMARY KEY (`RoomID`),
   KEY `RoomTypeID` (`RoomTypeID`),
@@ -455,7 +456,7 @@ DROP TABLE IF EXISTS `room_type`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `room_type` (
   `RoomTypeID` int(11) NOT NULL AUTO_INCREMENT,
-  `Name` varchar(100) NOT NULL,
+  `Name` varchar(100) NOT NULL CHECK (trim(`Name`) <> ''),
   `BedCount` int(11) NOT NULL CHECK (`BedCount` > 0),
   `BasePrice` decimal(10,2) NOT NULL CHECK (`BasePrice` >= 0),
   PRIMARY KEY (`RoomTypeID`)
@@ -491,10 +492,10 @@ DROP TABLE IF EXISTS `season`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `season` (
   `SeasonID` int(11) NOT NULL AUTO_INCREMENT,
-  `Name` varchar(100) NOT NULL,
+  `Name` varchar(100) NOT NULL CHECK (trim(`Name`) <> ''),
   `StartDate` date NOT NULL,
   `EndDate` date NOT NULL,
-  `PriceAdjustmentPercent` decimal(5,2) NOT NULL,
+  `PriceAdjustmentPercent` decimal(5,2) NOT NULL CHECK (`PriceAdjustmentPercent` >= -100.00 and `PriceAdjustmentPercent` <= 500.00),
   PRIMARY KEY (`SeasonID`),
   CONSTRAINT `CONSTRAINT_1` CHECK (`StartDate` <= `EndDate`)
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
@@ -529,4 +530,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*M!100616 SET NOTE_VERBOSITY=@OLD_NOTE_VERBOSITY */;
 
--- Dump completed on 2025-05-17 23:29:15
+-- Dump completed on 2025-06-01 21:35:35
